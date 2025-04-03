@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>円からベトナムドンへの換算</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 400px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .header {
+            font-weight: bold;
+            font-size: 22px;
+            color: #2d3436;
+            margin-bottom: 15px;
+        }
+        .form-label {
+            font-weight: 600;
+            text-align: left;
+            display: block;
+        }
+        input {
+            font-size: 18px;
+            height: 50px;
+            border-radius: 8px;
+        }
+        .result {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: black;
+        }
+        .exchange-rate {
+            font-size: 16px;
+            color: #636e72;
+            margin-top: 10px;
+        }
+        @media (max-width: 500px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">💱 円 から VND への換算</div>
+        
+        <div class="mb-3">
+            <label for="yen" class="form-label">金額 (円)</label>
+            <input type="text" id="yen" class="form-control" placeholder="金額を入力">
+        </div>
+
+        <p class="exchange-rate">現在の為替レート: <span id="rate">読み込み中...</span> VND/JPY</p>
+
+        <div class="result mt-3" id="result">0 VND</div>
+    </div>
+
+    <script>
+        let exchangeRate = 0;
+
+        async function fetchExchangeRate() {
+            try {
+                let response = await fetch("https://api.exchangerate-api.com/v4/latest/JPY");
+                let data = await response.json();
+                exchangeRate = data.rates.VND;
+                document.getElementById("rate").innerText = exchangeRate.toLocaleString("ja-JP");
+            } catch (error) {
+                document.getElementById("rate").innerText = "取得できません";
+                exchangeRate = 170; // デフォルト値
+            }
+        }
+
+        function formatNumber(input) {
+            let value = input.replace(/\D/g, ""); // 数字のみ取得
+            return new Intl.NumberFormat("ja-JP").format(value);
+        }
+
+        function convertCurrency() {
+            let yenInput = document.getElementById("yen").value.replace(/\D/g, ""); // 数字以外を削除
+            let yen = parseFloat(yenInput) || 0;
+            let vnd = yen * exchangeRate;
+
+            // 1000単位で四捨五入
+            vnd = Math.round(vnd / 1000) * 1000;
+
+            document.getElementById("result").innerText = vnd.toLocaleString("ja-JP") + " VND";
+        }
+
+        document.getElementById("yen").addEventListener("input", function (e) {
+            this.value = formatNumber(this.value);
+            convertCurrency(); // Tự động chuyển đổi khi nhập
+        });
+
+        fetchExchangeRate();
+    </script>
+</body>
+</html>
